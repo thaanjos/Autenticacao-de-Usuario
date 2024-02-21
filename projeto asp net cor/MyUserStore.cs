@@ -1,0 +1,145 @@
+﻿using Dapper;
+using Microsoft.AspNetCore.Identity;
+using System.Data.Common;
+using System.Data.SqlClient;
+
+namespace projeto_asp_net_cor;
+
+public class MyUserStore : IUserStore<MyUser>, IUserPasswordStore<MyUser>
+{
+    public async Task<IdentityResult> CreateAsync(MyUser user, CancellationToken cancellationToken)
+    {
+        using (var connection = GetOpenConneection())
+        {
+            await connection.ExecuteAsync(
+                "insert into Users([Id]," +
+                "[UserName]," +
+                "[normalizedUserName]," +
+                "[passwordHash])" +
+                "Values(@id,@userName,@normalizedUserName,@passwordHash)",
+                new
+                {
+                    id = user.Id,
+                    userName = user.UserName,
+                    normalizedUserName = user.NormalizedUserName,
+                    passwordHash = user.PassWordHash
+
+                });
+        }
+        return IdentityResult.Success;
+    }
+
+    public async Task<IdentityResult> DeleteAsync(MyUser user, CancellationToken cancellationToken)
+    {
+        using (var connection = GetOpenConneection())
+        {
+            await connection.ExecuteAsync("" +
+                "delete from Users where Id = @id",
+                new
+                {
+                    id = user.Id
+
+                });
+        }
+        return IdentityResult.Success;
+    }
+
+    public void Dispose()
+    {
+       
+    }
+
+    public static DbConnection GetOpenConneection()
+    {
+        var conection = new SqlConnection("Data source=RMX\\SQLEXPRESS; Initial Catalog=identityCurso;Integrated security=true;");
+
+        conection.Open();
+
+        return conection;
+    }
+
+    public async Task<MyUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
+    {
+        using (var connection = GetOpenConneection())
+        {
+            return await connection.QueryFirstOrDefaultAsync<MyUser>(
+                "select * from Users where Id = @id",
+                new { id = userId });
+        }        
+    }
+    public async Task<MyUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+    {
+        using (var connection = GetOpenConneection())
+        {
+            return await connection.QueryFirstOrDefaultAsync<MyUser>(
+                "select * from Users where normalizedUserName = @name",
+                new { name = normalizedUserName });
+        }
+    }
+
+    public Task<string?> GetNormalizedUserNameAsync(MyUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.NormalizedUserName);
+    }
+
+    public Task<string> GetUserIdAsync(MyUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.Id);
+    }
+
+    public Task<string?> GetUserNameAsync(MyUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.UserName);
+    }
+
+    public Task SetNormalizedUserNameAsync(MyUser user, string? normalizedName, CancellationToken cancellationToken)
+    {
+        user.NormalizedUserName = normalizedName;
+        return Task.CompletedTask;
+    }
+
+    public Task SetUserNameAsync(MyUser user, string? userName, CancellationToken cancellationToken)
+    {
+        user.UserName = userName;
+        return Task.CompletedTask;
+    }
+
+    public async Task<IdentityResult> UpdateAsync(MyUser user, CancellationToken cancellationToken)
+    {
+        using (var connection = GetOpenConneection())
+        {
+            await connection.ExecuteAsync(
+                "update Users" +
+                "set [Id] = @id," +
+                "[UserName] = @userName,"  +
+                "[normalizedUserName = @normalizedUserName," +
+                "[passwordHash]) = @passwordHash" +
+                "where [Id] = @id",
+                new
+                {
+                    id = user.Id,
+                    userName = user.UserName,
+                    normalizedUserName = user.NormalizedUserName,
+                    passwordHash = user.PassWordHash
+
+                });
+        }
+        return IdentityResult.Success;
+    }
+
+    public Task SetPasswordHashAsync(MyUser user, string passwordHash, CancellationToken cancellationToken)
+    {
+        user.PassWordHash = passwordHash;
+        return Task.CompletedTask;
+    }
+
+    public Task<string> GetPasswordHashAsync(MyUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.PassWordHash);
+    }
+
+    public Task<bool> HasPasswordAsync(MyUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.PassWordHash != null);
+    }
+}
