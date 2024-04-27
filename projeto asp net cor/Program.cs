@@ -21,10 +21,10 @@ builder.Services.AddScoped<IUserStore<IdentityUser>,
 builder.Services.AddAuthentication("cookies")
     .AddCookie("cookies", options => options.LoginPath = "/Home/Login");
 
-var connectionStrings = @"Data source=RMX\\SQLEXPRESS; Initial Catalog=identityCurso;Integrated security=true;";
-var migrationAssembly =typeof(Program).GetTypeInfo().Assembly.GetName().Name;
+var connectionStrings = @"Data source=RMX\SQLEXPRESS; Initial Catalog=IdentityCurso;Integrated Security=true;";
+var migrationAssembly = typeof(Program).GetTypeInfo().Assembly.GetName().Name;
 
-builder.Services.AddDbContext<IdentityDbContext>(opt => opt .UseSqlServer(connectionStrings, sql =>
+builder.Services.AddDbContext<IdentityDbContext>(opt => opt.UseSqlServer(connectionStrings, sql =>
     sql.MigrationsAssembly(migrationAssembly)));
 
 var app = builder.Build();

@@ -82,7 +82,7 @@ namespace projeto_asp_net_cor.Controllers
                     var result = await _userManager.CreateAsync(user, model.Password);
                 }
 
-                return View("Sucess");
+                return View("Success");
             }
             return View();
         }
